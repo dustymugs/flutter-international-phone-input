@@ -40,7 +40,6 @@ class InternationalPhoneInput extends StatefulWidget {
 	final TextInputAction phoneTextInputAction;
 	final void Function(String newValue) phoneTextOnFieldSubmitted;
 	final void Function(Country newValue) dialCodeOnChange;
-	final void Function() dialCodeOnTap;
 
   InternationalPhoneInput({
 		this.onPhoneNumberChange,
@@ -59,7 +58,6 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.phoneTextFocusNode,
 		this.phoneTextInputAction,
 		this.phoneTextOnFieldSubmitted,
-		this.dialCodeOnTap,
 		this.dialCodeOnChange,
 		this.useFormFields = false,
 		this.showFlags = true,
@@ -253,18 +251,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			items: items,
 		);
 
-		if (widget.dialCodeOnTap != null) {
-			debugPrint('dialCodeOnTap');
-			return GestureDetector(
-				child: dropdown,
-				onTap: () {
-					debugPrint('tap tap tap');
-				}//widget.dialCodeOnTap,
-			);
-		}
-		else {
-			return dropdown;
-		}
+		return dropdown;
 	}
 
 	Widget _buildPhoneTextWidget() {
