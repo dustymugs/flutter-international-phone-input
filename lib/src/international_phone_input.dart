@@ -170,8 +170,10 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
     List<Country> elements = [];
     jsonList.forEach((s) {
       Map elem = Map.from(s);
-			if (!_canUseCountry(elem))
+			if (!_canUseCountry(elem)) {
+				debugPrint("cannot use: ${elem['alpha_3_code']}");
 				return;
+			}
 
       elements.add(
 				Country(
