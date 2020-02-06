@@ -152,7 +152,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			String _dialCode = dialCode.toString().toUpperCase();
 			if (
 				(elem['alpha_2_code'].toUpperCase() == _dialCode) ||
-				(elem['alpha_2_code'].toUpperCase() == _dialCode) ||
+				(elem['alpha_3_code'].toUpperCase() == _dialCode) ||
 				(elem['dial_code'] == _dialCode)
 			) {
 				return true;
@@ -171,7 +171,6 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
     jsonList.forEach((s) {
       Map elem = Map.from(s);
 			if (!_canUseCountry(elem)) {
-				debugPrint("cannot use: ${elem['alpha_3_code']}");
 				return;
 			}
 
