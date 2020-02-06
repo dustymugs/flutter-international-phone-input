@@ -40,6 +40,7 @@ class InternationalPhoneInput extends StatefulWidget {
 	final TextInputAction phoneTextInputAction;
 	final void Function(String newValue) phoneTextOnFieldSubmitted;
 	final void Function(Country newValue) dialCodeOnChange;
+	final void Function() dialCodeOnTap;
 
   InternationalPhoneInput({
 		this.onPhoneNumberChange,
@@ -58,6 +59,7 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.phoneTextFocusNode,
 		this.phoneTextInputAction,
 		this.phoneTextOnFieldSubmitted,
+		this.dialCodeOnTap,
 		this.dialCodeOnChange,
 		this.useFormFields = false,
 		this.showFlags = true,
@@ -237,7 +239,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		).toList();
 
 		// cannot use DropdownButtonFormField as we cannot pass a FocusNode to it
-		return DropdownButton<Country>(
+		DropdownButton dropdown = DropdownButton<Country>(
 			value: selectedItem,
 			focusNode: widget.dialCodeFocusNode,
 			onChanged: (Country newValue) {
@@ -250,6 +252,16 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			},
 			items: items,
 		);
+
+		if (widget.dialCodeOnTap != null) {
+			return GestureDetector(
+				child: dropdown,
+				onTap: widget.dialCodeOnTap,
+			);
+		}
+		else {
+			return dropdown;
+		}
 	}
 
 	Widget _buildPhoneTextWidget() {
