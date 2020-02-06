@@ -141,18 +141,18 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			).then((isValid) {
 				setState(() {
 					errorMessage = isValid ? null : widget.errorText;
-				});
 
-        if (widget.onPhoneNumberChange != null) {
-          if (isValid) {
-            PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
-                .then((number) {
-              widget.onPhoneNumberChange(phoneText, number, selectedCountry.code);
-            });
-          } else {
-            widget.onPhoneNumberChange('', '', selectedCountry.code);
-          }
-        }
+					if (widget.onPhoneNumberChange != null) {
+						if (isValid) {
+							PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
+									.then((number) {
+								widget.onPhoneNumberChange(phoneText, number, selectedCountry.code);
+							});
+						} else {
+							widget.onPhoneNumberChange('', '', selectedCountry.code);
+						}
+					}
+				});
       });
     }
 		else {
