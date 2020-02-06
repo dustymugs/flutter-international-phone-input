@@ -140,8 +140,6 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			 	selectedCountry.code
 			).then((isValid) {
 				setState(() {
-					errorMessage = isValid ? null : widget.errorText;
-
 					if (widget.onPhoneNumberChange != null) {
 						if (isValid) {
 							PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
@@ -152,6 +150,8 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 							widget.onPhoneNumberChange('', '', selectedCountry.code);
 						}
 					}
+
+					errorMessage = isValid ? null : widget.errorText;
 				});
       });
     }
