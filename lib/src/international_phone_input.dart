@@ -32,6 +32,8 @@ class InternationalPhoneInput extends StatefulWidget {
   final TextStyle helperStyle;
   final TextStyle labelStyle;
   final int errorMaxLines;
+  final int helperMaxLines;
+	final bool isRequired;
 	final bool showFlags;
 	final bool useFormFields;
 	final FocusNode dialCodeFocusNode;
@@ -54,12 +56,14 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.helperStyle,
 		this.labelStyle,
 		this.errorMaxLines = 3,
+		this.helperMaxLines = 2,
 		this.dialCodeFocusNode,
 		this.phoneTextFocusNode,
 		this.phoneTextInputAction,
 		this.phoneTextOnFieldSubmitted,
 		this.dialCodeOnChange,
 		this.useFormFields = false,
+		this.isRequired = false,
 		this.showFlags = true,
 		this.filteredDialCodes,
 	});
@@ -122,9 +126,11 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
   _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
-    if (phoneText != null && phoneText.isNotEmpty) {
-      PhoneService.parsePhoneNumber(phoneText, selectedItem.code)
-          .then((isValid) {
+    if (widget.isRequired || (phoneText != null && phoneText.isNotEmpty)) {
+      PhoneService.parsePhoneNumber(
+				phoneText,
+			 	selectedItem.code
+			).then((isValid) {
         setState(() {
           hasError = !isValid;
         });
@@ -266,6 +272,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			helperStyle: widget.helperStyle,
 			labelStyle: widget.labelStyle,
 			errorMaxLines: widget.errorMaxLines,
+			helperMaxLines: widget.helperMaxLines,
 		);
 
 		if (widget.useFormFields) {
