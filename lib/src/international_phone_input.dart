@@ -10,25 +10,57 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class InternationalPhoneInput extends StatefulWidget {
-  final void Function(String phoneNumber, String internationalizedPhoneNumber,
-      String isoCode) onPhoneNumberChange;
+
+	static const String ERROR_TEXT = 'Please enter a valid phone number';
+	static const String HINT_TEXT = 'eg. 244056345';
+	static const String HELPER_TEXT = 'A valid phone number includes area/city code';
+	static const String LABEL_TEXT = 'Phone number';
+
+  final void Function(
+		String phoneNumber,
+	 	String internationalizedPhoneNumber,
+	 	String isoCode
+	) onPhoneNumberChange;
   final String initialPhoneNumber;
   final String initialSelection;
   final String errorText;
   final String hintText;
+	final String helperText;
+	final String labelText;
   final TextStyle errorStyle;
   final TextStyle hintStyle;
+  final TextStyle helperStyle;
+  final TextStyle labelStyle;
   final int errorMaxLines;
+	final bool showFlags;
+	final bool useFormFields;
+	final FocusNode dialCodeFocusNode;
+	final FocusNode phoneTextFocusNode;
+	final TextInputAction phoneTextInputAction;
+	final void Function(String newValue) phoneTextOnFieldSubmitted;
+	final void Function(Country newValue) dialCodeOnChange;
 
-  InternationalPhoneInput(
-      {this.onPhoneNumberChange,
-      this.initialPhoneNumber,
-      this.initialSelection,
-      this.errorText,
-      this.hintText,
-      this.errorStyle,
-      this.hintStyle,
-      this.errorMaxLines});
+  InternationalPhoneInput({
+		this.onPhoneNumberChange,
+		this.initialPhoneNumber,
+		this.initialSelection,
+		this.errorText = ERROR_TEXT,
+		this.hintText = HINT_TEXT,
+		this.helperText = HELPER_TEXT,
+		this.labelText = LABEL_TEXT,
+		this.errorStyle,
+		this.hintStyle,
+		this.helperStyle,
+		this.labelStyle,
+		this.errorMaxLines = 3,
+		this.dialCodeFocusNode,
+		this.phoneTextFocusNode,
+		this.phoneTextInputAction,
+		this.phoneTextOnFieldSubmitted,
+		this.dialCodeOnChange,
+		this.useFormFields = false,
+		this.showFlags = true,
+	});
 
   static Future<String> internationalizeNumber(String number, String iso) {
     return PhoneService.getNormalizedPhoneNumber(number, iso);
@@ -41,30 +73,17 @@ class InternationalPhoneInput extends StatefulWidget {
 
 class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   Country selectedItem;
-  List<Country> itemList = [];
-
-  String errorText;
-  String hintText;
-
-  TextStyle errorStyle;
-  TextStyle hintStyle;
-
-  int errorMaxLines;
+  List<Country> itemList;
 
   bool hasError = false;
 
-  _InternationalPhoneInputState();
-
-  final phoneTextController = TextEditingController();
+  TextEditingController phoneTextController;
 
   @override
   void initState() {
-    errorText = widget.errorText ?? 'Please enter a valid phone number';
-    hintText = widget.hintText ?? 'eg. 244056345';
-    errorStyle = widget.errorStyle;
-    hintStyle = widget.hintStyle;
-    errorMaxLines = widget.errorMaxLines;
+		itemList = <Country>[];
 
+		phoneTextController = TextEditingController();
     phoneTextController.addListener(_validatePhoneNumber);
     phoneTextController.text = widget.initialPhoneNumber;
 
@@ -72,11 +91,13 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
       Country preSelectedItem;
 
       if (widget.initialSelection != null) {
+				String initialSelection = widget.initialSelection.toString().toUpperCase();
         preSelectedItem = list.firstWhere(
-            (e) =>
-                (e.code.toUpperCase() ==
-                    widget.initialSelection.toUpperCase()) ||
-                (e.dialCode == widget.initialSelection.toString()),
+            (e) => (
+							(e.code.toUpperCase() == initialSelection) ||
+							(e.code3.toUpperCase() == initialSelection) ||
+							(e.dialCode == initialSelection)
+						),
             orElse: () => list[0]);
       } else {
         preSelectedItem = list[0];
@@ -90,6 +111,12 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
     super.initState();
   }
+
+	@override
+	void dispose() {
+		phoneTextController.dispose();
+		super.dispose();
+	}
 
   _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
@@ -124,6 +151,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
       elements.add(Country(
           name: elem['en_short_name'],
           code: elem['alpha_2_code'],
+          code3: elem['alpha_3_code'],
           dialCode: elem['dial_code'],
           flagUri: 'assets/flags/${elem['alpha_2_code'].toLowerCase()}.png'));
     });
@@ -139,51 +167,102 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
           DropdownButtonHideUnderline(
             child: Padding(
               padding: EdgeInsets.only(top: 8),
-              child: DropdownButton<Country>(
-                value: selectedItem,
-                onChanged: (Country newValue) {
-                  setState(() {
-                    selectedItem = newValue;
-                  });
-                  _validatePhoneNumber();
-                },
-                items: itemList.map<DropdownMenuItem<Country>>((Country value) {
-                  return DropdownMenuItem<Country>(
-                    value: value,
-                    child: Container(
-                      padding: const EdgeInsets.only(bottom: 5.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Image.asset(
-                            value.flagUri,
-                            width: 32.0,
-                            package: 'international_phone_input',
-                          ),
-                          SizedBox(width: 4),
-                          Text(value.dialCode)
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
+              child: _buildDialCodeWidget(),
             ),
           ),
           Flexible(
-              child: TextField(
-            keyboardType: TextInputType.phone,
-            controller: phoneTextController,
-            decoration: InputDecoration(
-              hintText: hintText,
-              errorText: hasError ? errorText : null,
-              hintStyle: hintStyle ?? null,
-              errorStyle: errorStyle ?? null,
-              errorMaxLines: errorMaxLines ?? 3,
-            ),
-          ))
+            child: _buildPhoneTextWidget(),
+					),
         ],
       ),
     );
   }
+
+	Widget _buildDialCodeWidget() {
+
+		List<DropdownMenuItem<Country>> items = itemList.map<DropdownMenuItem<Country>>(
+			(Country value) {
+				return DropdownMenuItem<Country>(
+					value: value,
+					child: Container(
+						padding: const EdgeInsets.only(bottom: 5.0),
+						child: Row(
+							mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+							children: <Widget>[
+								(
+									widget.showFlags ?
+										Image.asset(
+											value.flagUri,
+											width: 32.0,
+											package: 'international_phone_input',
+										) :
+										Text(value.code3)
+								),
+								SizedBox(width: 4),
+								Text(value.dialCode)
+							],
+						),
+					),
+				);
+			}
+		).toList();
+
+		// cannot use DropdownButtonFormField as we cannot pass a FocusNode to it
+		return DropdownButton<Country>(
+			value: selectedItem,
+			focusNode: widget.dialCodeFocusNode,
+			onChanged: (Country newValue) {
+				setState(() {
+					selectedItem = newValue;
+				});
+				_validatePhoneNumber();
+				if (widget.dialCodeOnChange != null)
+					widget.dialCodeOnChange(newValue);
+			},
+			items: items,
+		);
+	}
+
+	Widget _buildPhoneTextWidget() {
+		if (widget.useFormFields) {
+			return TextFormField(
+				keyboardType: TextInputType.phone,
+				controller: phoneTextController,
+				focusNode: widget.phoneTextFocusNode,
+				textInputAction: widget.phoneTextInputAction,
+				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
+				decoration: InputDecoration(
+					errorText: hasError ? widget.errorText : null,
+					hintText: widget.hintText,
+					helperText: widget.helperText,
+					labelText: widget.labelText,
+					errorStyle: widget.errorStyle,
+					hintStyle: widget.hintStyle,
+					helperStyle: widget.helperStyle,
+					labelStyle: widget.labelStyle,
+					errorMaxLines: widget.errorMaxLines,
+				),
+			);
+		}
+		else {
+			return TextField(
+				keyboardType: TextInputType.phone,
+				controller: phoneTextController,
+				focusNode: widget.phoneTextFocusNode,
+				textInputAction: widget.phoneTextInputAction,
+				decoration: InputDecoration(
+					errorText: hasError ? widget.errorText : null,
+					hintText: widget.hintText,
+					helperText: widget.helperText,
+					labelText: widget.labelText,
+					errorStyle: widget.errorStyle,
+					hintStyle: widget.hintStyle,
+					helperStyle: widget.helperStyle,
+					labelStyle: widget.labelStyle,
+					errorMaxLines: widget.errorMaxLines,
+				),
+			);
+		}
+	}
+
 }
