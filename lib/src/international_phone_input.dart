@@ -264,7 +264,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 	Widget _buildPhoneTextWidget() {
 
 		InputDecoration inputDecoration = InputDecoration(
-			errorText: widget.useFormFields ? widget.errorText : (hasError ? widget.errorText : null),
+			errorText: widget.useFormFields ? null : (hasError ? widget.errorText : null),
 			hintText: widget.hintText,
 			helperText: widget.helperText,
 			labelText: widget.labelText,
