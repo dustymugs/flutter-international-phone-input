@@ -145,19 +145,15 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
 	bool _canUseCountry(Map elem) {
 		List<String> filteredDialCodes = widget.filteredDialCodes ?? [];
-		if (
-			elem["code"] == null ||
-			filteredDialCodes.length < 1
-		) {
+		if (filteredDialCodes.length < 1)
 			return true;
-		}
 
 		for (final String dialCode in filteredDialCodes) {
 			String _dialCode = dialCode.toString().toUpperCase();
 			if (
-				(elem['code'].toUpperCase() == _dialCode) ||
-				(elem['code3'].toUpperCase() == _dialCode) ||
-				(elem['dialCode'] == _dialCode)
+				(elem['alpha_2_code'].toUpperCase() == _dialCode) ||
+				(elem['alpha_2_code'].toUpperCase() == _dialCode) ||
+				(elem['dial_code'] == _dialCode)
 			) {
 				return true;
 			}
