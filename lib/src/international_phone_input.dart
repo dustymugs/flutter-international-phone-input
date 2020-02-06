@@ -131,9 +131,9 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				phoneText,
 			 	selectedCountry.code
 			).then((isValid) {
-        setState(() {
-          hasError = !isValid;
-        });
+				setState(() {
+					hasError = !isValid;
+				});
 
         if (widget.onPhoneNumberChange != null) {
           if (isValid) {
@@ -265,7 +265,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 	Widget _buildPhoneTextWidget() {
 
 		InputDecoration inputDecoration = InputDecoration(
-			errorText: hasError ? widget.errorText : null,
+			errorText: widget.useFormFields ? widget.errorText : (hasError ? widget.errorText : null),
 			hintText: widget.hintText,
 			helperText: widget.helperText,
 			labelText: widget.labelText,
