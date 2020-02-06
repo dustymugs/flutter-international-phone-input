@@ -256,7 +256,9 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		if (widget.dialCodeOnTap != null) {
 			return GestureDetector(
 				child: dropdown,
-				onTap: widget.dialCodeOnTap,
+				onTap: () {
+					debugPrint('tap tap tap');
+				}//widget.dialCodeOnTap,
 			);
 		}
 		else {
