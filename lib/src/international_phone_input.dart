@@ -130,26 +130,18 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
     String phoneText = phoneTextController.text;
 
 		if (widget.isRequired && (phoneText == null || phoneText.isEmpty)) {
-			if (!widget.useFormFields && mounted) {
-				setState(() {
-					errorMessage = widget.requiredText;
-				});
-			}
-			else
+			setState(() {
 				errorMessage = widget.requiredText;
+			});
 		}
 		else if (phoneText != null && phoneText.isNotEmpty) {
       PhoneService.parsePhoneNumber(
 				phoneText,
 			 	selectedCountry.code
 			).then((isValid) {
-				if (!widget.useFormFields && mounted) {
-					setState(() {
-						errorMessage = isValid ? null : widget.errorText;
-					});
-				}
-				else
-						errorMessage = isValid ? null : widget.errorText;
+				setState(() {
+					errorMessage = isValid ? null : widget.errorText;
+				});
 
         if (widget.onPhoneNumberChange != null) {
           if (isValid) {
@@ -164,13 +156,9 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
       });
     }
 		else {
-			if (!widget.useFormFields && mounted) {
-				setState(() {
-					errorMessage = null;
-				});
-			}
-			else
+			setState(() {
 				errorMessage = null;
+			});
 		}
 
 		return errorMessage;
