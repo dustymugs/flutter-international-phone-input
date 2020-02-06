@@ -149,6 +149,9 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			return true;
 
 		for (final String dialCode in filteredDialCodes) {
+			if (dialCode == null)
+				continue;
+
 			String _dialCode = dialCode.toString().toUpperCase();
 			if (
 				(elem['code'].toUpperCase() == _dialCode) ||
