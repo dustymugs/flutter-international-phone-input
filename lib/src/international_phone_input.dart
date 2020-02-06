@@ -143,7 +143,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			).then((isValid) {
 				if (mounted) {
 					setState(() {
-						debugPrint('$isValid');
+						debugPrint('valid phone number ($phoneText): $isValid');
 						errorMessage = isValid ? null : widget.errorText;
 					});
 				}
@@ -168,6 +168,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			}
 		}
 
+		debugPrint(errorMessage);
 		return errorMessage;
   }
 
