@@ -34,8 +34,10 @@ class InternationalPhoneInput extends StatefulWidget {
   final int errorMaxLines;
 	final bool showFlags;
 	final bool useTextFormField;
-	final dialCodeFocusNode;
-	final phoneTextFocusNode;
+	final FocusNode dialCodeFocusNode;
+	final FocusNode phoneTextFocusNode;
+	final TextInputAction phoneTextInputAction;
+	final void Function(String value) phoneTextOnFieldSubmitted;
 
   InternationalPhoneInput({
 		this.onPhoneNumberChange,
@@ -52,6 +54,8 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.errorMaxLines = 3,
 		this.dialCodeFocusNode,
 		this.phoneTextFocusNode,
+		this.phoneTextInputAction,
+		this.phoneTextOnFieldSubmitted,
 		this.useTextFormField = false,
 		this.showFlags = true,
 	});
@@ -198,33 +202,53 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
             ),
           ),
           Flexible(
-            child: getTextField()(
-							keyboardType: TextInputType.phone,
-							controller: phoneTextController,
-							focusNode: widget.phoneTextFocusNode,
-							decoration: InputDecoration(
-								errorText: hasError ? widget.errorText : null,
-								hintText: widget.hintText,
-								helperText: widget.helperText,
-								labelText: widget.labelText,
-								errorStyle: widget.errorStyle,
-								hintStyle: widget.hintStyle,
-								helperStyle: widget.helperStyle,
-								labelStyle: widget.labelStyle,
-								errorMaxLines: widget.errorMaxLines,
-							),
-						),
+            child: _buildTextWidget(),
 					),
         ],
       ),
     );
   }
 
-	dynamic getTextField() {
-		if (widget.useTextFormField)
-			return TextFormField;
-		else
-			return TextField;
+	Widget _buildTextWidget() {
+		if (widget.useTextFormField) {
+			return TextFormField(
+				keyboardType: TextInputType.phone,
+				controller: phoneTextController,
+				focusNode: widget.phoneTextFocusNode,
+				textInputAction: widget.phoneTextInputAction,
+				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
+				decoration: InputDecoration(
+					errorText: hasError ? widget.errorText : null,
+					hintText: widget.hintText,
+					helperText: widget.helperText,
+					labelText: widget.labelText,
+					errorStyle: widget.errorStyle,
+					hintStyle: widget.hintStyle,
+					helperStyle: widget.helperStyle,
+					labelStyle: widget.labelStyle,
+					errorMaxLines: widget.errorMaxLines,
+				),
+			);
+		}
+		else {
+			return TextField(
+				keyboardType: TextInputType.phone,
+				controller: phoneTextController,
+				focusNode: widget.phoneTextFocusNode,
+				textInputAction: widget.phoneTextInputAction,
+				decoration: InputDecoration(
+					errorText: hasError ? widget.errorText : null,
+					hintText: widget.hintText,
+					helperText: widget.helperText,
+					labelText: widget.labelText,
+					errorStyle: widget.errorStyle,
+					hintStyle: widget.hintStyle,
+					helperStyle: widget.helperStyle,
+					labelStyle: widget.labelStyle,
+					errorMaxLines: widget.errorMaxLines,
+				),
+			);
+		}
 	}
 
 }
