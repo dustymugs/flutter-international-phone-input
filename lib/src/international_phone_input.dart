@@ -168,7 +168,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			}
 		}
 
-		debugPrint(errorMessage);
+		debugPrint('error message: $errorMessage');
 		return errorMessage;
   }
 
