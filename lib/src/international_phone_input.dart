@@ -144,15 +144,15 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   }
 
 	bool _canUseCountry(Map elem) {
-		debugPrint('${elem["code"]}');
 		List<String> filteredDialCodes = widget.filteredDialCodes ?? [];
-		if (filteredDialCodes.length < 1)
+		if (
+			elem["code"] == null ||
+			filteredDialCodes.length < 1
+		) {
 			return true;
+		}
 
 		for (final String dialCode in filteredDialCodes) {
-			if (dialCode == null)
-				continue;
-
 			String _dialCode = dialCode.toString().toUpperCase();
 			if (
 				(elem['code'].toUpperCase() == _dialCode) ||
