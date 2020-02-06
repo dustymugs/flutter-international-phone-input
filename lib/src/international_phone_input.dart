@@ -81,6 +81,9 @@ class InternationalPhoneInput extends StatefulWidget {
 }
 
 class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
+
+	var _phoneTextKey = GlobalKey<FormFieldState>();
+
   Country selectedCountry;
   List<Country> itemList;
 
@@ -139,20 +142,23 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				phoneText,
 			 	selectedCountry.code
 			).then((isValid) {
-				setState(() {
-					if (widget.onPhoneNumberChange != null) {
-						if (isValid) {
-							PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
-									.then((number) {
-								widget.onPhoneNumberChange(phoneText, number, selectedCountry.code);
-							});
-						} else {
-							widget.onPhoneNumberChange('', '', selectedCountry.code);
-						}
-					}
 
+				if (widget.onPhoneNumberChange != null) {
+					if (isValid) {
+						PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
+								.then((number) {
+							widget.onPhoneNumberChange(phoneText, number, selectedCountry.code);
+						});
+					}
+				 	else {
+						widget.onPhoneNumberChange('', '', selectedCountry.code);
+					}
+				}
+
+				setState(() {
 					errorMessage = isValid ? null : widget.errorText;
 				});
+
       });
     }
 		else {
@@ -291,7 +297,11 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		);
 
 		if (widget.useFormFields) {
+			// run validators on reload to process async results
+			_phoneTextKey.currentState?.validate();
+
 			return TextFormField(
+				key: _phoneTextKey,
 				keyboardType: TextInputType.phone,
 				controller: phoneTextController,
 				focusNode: widget.phoneTextFocusNode,
