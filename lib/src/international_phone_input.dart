@@ -144,6 +144,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   }
 
 	bool _canUseCountry(Map elem) {
+		debugPrint('${elem["code"]}');
 		List<String> filteredDialCodes = widget.filteredDialCodes ?? [];
 		if (filteredDialCodes.length < 1)
 			return true;
