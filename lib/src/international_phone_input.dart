@@ -78,7 +78,7 @@ class InternationalPhoneInput extends StatefulWidget {
 }
 
 class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
-  Country selectedItem;
+  Country selectedCountry;
   List<Country> itemList;
 
   bool hasError = false;
@@ -111,7 +111,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
       setState(() {
         itemList = list;
-        selectedItem = preSelectedItem;
+        selectedCountry = preSelectedItem;
       });
     });
 
@@ -124,12 +124,12 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		super.dispose();
 	}
 
-  _validatePhoneNumber() {
+  bool _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
     if (widget.isRequired || (phoneText != null && phoneText.isNotEmpty)) {
       PhoneService.parsePhoneNumber(
 				phoneText,
-			 	selectedItem.code
+			 	selectedCountry.code
 			).then((isValid) {
         setState(() {
           hasError = !isValid;
@@ -137,16 +137,18 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
         if (widget.onPhoneNumberChange != null) {
           if (isValid) {
-            PhoneService.getNormalizedPhoneNumber(phoneText, selectedItem.code)
+            PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
                 .then((number) {
-              widget.onPhoneNumberChange(phoneText, number, selectedItem.code);
+              widget.onPhoneNumberChange(phoneText, number, selectedCountry.code);
             });
           } else {
-            widget.onPhoneNumberChange('', '', selectedItem.code);
+            widget.onPhoneNumberChange('', '', selectedCountry.code);
           }
         }
       });
     }
+
+		return hasError;
   }
 
 	bool _canUseCountry(Map elem) {
@@ -244,11 +246,11 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
 		// cannot use DropdownButtonFormField as we cannot pass a FocusNode to it
 		DropdownButton dropdown = DropdownButton<Country>(
-			value: selectedItem,
+			value: selectedCountry,
 			focusNode: widget.dialCodeFocusNode,
 			onChanged: (Country newValue) {
 				setState(() {
-					selectedItem = newValue;
+					selectedCountry = newValue;
 				});
 				_validatePhoneNumber();
 				if (widget.dialCodeOnChange != null)
@@ -283,6 +285,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				textInputAction: widget.phoneTextInputAction,
 				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
 				decoration: inputDecoration,
+				validator: (String value) => _validatePhoneNumber() ? null : widget.errorText,
 			);
 		}
 		else {
