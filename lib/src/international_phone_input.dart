@@ -10,14 +10,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class InternationalPhoneInput extends StatefulWidget {
-  final void Function(String phoneNumber, String internationalizedPhoneNumber,
-      String isoCode) onPhoneNumberChange;
+
+	static const String ERROR_TEXT = 'Please enter a valid phone number';
+	static const String HINT_TEXT = 'eg. 244056345';
+	static const String HELPER_TEXT = 'A valid phone number includes area/city code';
+	static const String LABEL_TEXT = 'Phone number';
+
+  final void Function(
+		String phoneNumber,
+	 	String internationalizedPhoneNumber,
+	 	String isoCode
+	) onPhoneNumberChange;
   final String initialPhoneNumber;
   final String initialSelection;
   final String errorText;
   final String hintText;
+	final String helperText;
+	final String labelText;
   final TextStyle errorStyle;
   final TextStyle hintStyle;
+  final TextStyle helperStyle;
+  final TextStyle labelStyle;
   final int errorMaxLines;
 	final bool showFlags;
 	final bool useTextFormField;
@@ -28,11 +41,15 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.onPhoneNumberChange,
 		this.initialPhoneNumber,
 		this.initialSelection,
-		this.errorText,
-		this.hintText,
+		this.errorText = ERROR_TEXT,
+		this.hintText = HINT_TEXT,
+		this.helperText = HELPER_TEXT,
+		this.labelText = LABEL_TEXT,
 		this.errorStyle,
 		this.hintStyle,
-		this.errorMaxLines,
+		this.helperStyle,
+		this.labelStyle,
+		this.errorMaxLines = 3,
 		this.dialCodeFocusNode,
 		this.phoneTextFocusNode,
 		this.useTextFormField = false,
@@ -50,30 +67,17 @@ class InternationalPhoneInput extends StatefulWidget {
 
 class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   Country selectedItem;
-  List<Country> itemList = [];
-
-  String errorText;
-  String hintText;
-
-  TextStyle errorStyle;
-  TextStyle hintStyle;
-
-  int errorMaxLines;
+  List<Country> itemList;
 
   bool hasError = false;
 
-  _InternationalPhoneInputState();
-
-  final phoneTextController = TextEditingController();
+  TextEditingController phoneTextController;
 
   @override
   void initState() {
-    errorText = widget.errorText ?? 'Please enter a valid phone number';
-    hintText = widget.hintText ?? 'eg. 244056345';
-    errorStyle = widget.errorStyle;
-    hintStyle = widget.hintStyle;
-    errorMaxLines = widget.errorMaxLines;
+		itemList = <Country>[];
 
+		phoneTextController = TextEditingController();
     phoneTextController.addListener(_validatePhoneNumber);
     phoneTextController.text = widget.initialPhoneNumber;
 
@@ -101,6 +105,12 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
     super.initState();
   }
+
+	@override
+	void dispose() {
+		phoneTextController.dispose();
+		super.dispose();
+	}
 
   _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
@@ -193,11 +203,15 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 							controller: phoneTextController,
 							focusNode: widget.phoneTextFocusNode,
 							decoration: InputDecoration(
-								hintText: hintText,
-								errorText: hasError ? errorText : null,
-								hintStyle: hintStyle ?? null,
-								errorStyle: errorStyle ?? null,
-								errorMaxLines: errorMaxLines ?? 3,
+								errorText: hasError ? widget.errorText : null,
+								hintText: widget.hintText,
+								helperText: widget.helperText,
+								labelText: widget.labelText,
+								errorStyle: widget.errorStyle,
+								hintStyle: widget.hintStyle,
+								helperStyle: widget.helperStyle,
+								labelStyle: widget.labelStyle,
+								errorMaxLines: widget.errorMaxLines,
 							),
 						),
 					),
