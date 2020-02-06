@@ -141,9 +141,9 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				phoneText,
 			 	selectedCountry.code
 			).then((isValid) {
-				debugPrint('$isValid');
 				if (mounted) {
 					setState(() {
+						debugPrint('$isValid');
 						errorMessage = isValid ? null : widget.errorText;
 					});
 				}
