@@ -33,11 +33,12 @@ class InternationalPhoneInput extends StatefulWidget {
   final TextStyle labelStyle;
   final int errorMaxLines;
 	final bool showFlags;
-	final bool useTextFormField;
+	final bool useFormFields;
 	final FocusNode dialCodeFocusNode;
 	final FocusNode phoneTextFocusNode;
 	final TextInputAction phoneTextInputAction;
-	final void Function(String value) phoneTextOnFieldSubmitted;
+	final void Function(String newValue) phoneTextOnFieldSubmitted;
+	final void Function(Country newValue) dialCodeOnChange;
 
   InternationalPhoneInput({
 		this.onPhoneNumberChange,
@@ -56,7 +57,8 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.phoneTextFocusNode,
 		this.phoneTextInputAction,
 		this.phoneTextOnFieldSubmitted,
-		this.useTextFormField = false,
+		this.dialCodeOnChange,
+		this.useFormFields = false,
 		this.showFlags = true,
 	});
 
@@ -165,52 +167,64 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
           DropdownButtonHideUnderline(
             child: Padding(
               padding: EdgeInsets.only(top: 8),
-              child: DropdownButton<Country>(
-                value: selectedItem,
-								focusNode: widget.dialCodeFocusNode,
-                onChanged: (Country newValue) {
-                  setState(() {
-                    selectedItem = newValue;
-                  });
-                  _validatePhoneNumber();
-                },
-                items: itemList.map<DropdownMenuItem<Country>>((Country value) {
-                  return DropdownMenuItem<Country>(
-                    value: value,
-                    child: Container(
-                      padding: const EdgeInsets.only(bottom: 5.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-													(
-														widget.showFlags ?
-															Image.asset(
-																value.flagUri,
-																width: 32.0,
-																package: 'international_phone_input',
-															) :
-															Text(value.code3)
-													),
-                          SizedBox(width: 4),
-                          Text(value.dialCode)
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
+              child: _buildDialCodeWidget(),
             ),
           ),
           Flexible(
-            child: _buildTextWidget(),
+            child: _buildPhoneTextWidget(),
 					),
         ],
       ),
     );
   }
 
-	Widget _buildTextWidget() {
-		if (widget.useTextFormField) {
+	Widget _buildDialCodeWidget() {
+
+		List<DropdownMenuItem<Country>> items = itemList.map<DropdownMenuItem<Country>>(
+			(Country value) {
+				return DropdownMenuItem<Country>(
+					value: value,
+					child: Container(
+						padding: const EdgeInsets.only(bottom: 5.0),
+						child: Row(
+							mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+							children: <Widget>[
+								(
+									widget.showFlags ?
+										Image.asset(
+											value.flagUri,
+											width: 32.0,
+											package: 'international_phone_input',
+										) :
+										Text(value.code3)
+								),
+								SizedBox(width: 4),
+								Text(value.dialCode)
+							],
+						),
+					),
+				);
+			}
+		).toList();
+
+		// cannot use DropdownButtonFormField as we cannot pass a FocusNode to it
+		return DropdownButton<Country>(
+			value: selectedItem,
+			focusNode: widget.dialCodeFocusNode,
+			onChanged: (Country newValue) {
+				setState(() {
+					selectedItem = newValue;
+				});
+				_validatePhoneNumber();
+				if (widget.dialCodeOnChange != null)
+					widget.dialCodeOnChange(newValue);
+			},
+			items: items,
+		);
+	}
+
+	Widget _buildPhoneTextWidget() {
+		if (widget.useFormFields) {
 			return TextFormField(
 				keyboardType: TextInputType.phone,
 				controller: phoneTextController,
