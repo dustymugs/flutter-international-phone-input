@@ -90,6 +90,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   String errorMessage = null;
 
   TextEditingController phoneTextController;
+	bool _returnedFromAsyncValidate = false;
 
   @override
   void initState() {
@@ -138,11 +139,13 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			});
 		}
 		else if (phoneText != null && phoneText.isNotEmpty) {
+			if (_returnedFromAsyncValidate)
+				return errorMessage;
+			_returnedFromAsyncValidate = false;
       PhoneService.parsePhoneNumber(
 				phoneText,
 			 	selectedCountry.code
 			).then((isValid) {
-
 				if (widget.onPhoneNumberChange != null) {
 					if (isValid) {
 						PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
@@ -156,6 +159,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				}
 
 				setState(() {
+					_returnedFromAsyncValidate = true;
 					errorMessage = isValid ? null : widget.errorText;
 				});
 
