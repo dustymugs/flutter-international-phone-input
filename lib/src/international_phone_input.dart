@@ -22,7 +22,7 @@ class InternationalPhoneInput extends StatefulWidget {
 	 	String isoCode
 	) onPhoneNumberChange;
   final String initialPhoneNumber;
-  final String initialSelection;
+  final String initialDialCode;
   final String errorText;
   final String hintText;
 	final String helperText;
@@ -35,6 +35,7 @@ class InternationalPhoneInput extends StatefulWidget {
 	final bool showFlags;
 	final bool useFormFields;
 	final FocusNode dialCodeFocusNode;
+	final List<String> filteredDialCodes;
 	final FocusNode phoneTextFocusNode;
 	final TextInputAction phoneTextInputAction;
 	final void Function(String newValue) phoneTextOnFieldSubmitted;
@@ -43,7 +44,7 @@ class InternationalPhoneInput extends StatefulWidget {
   InternationalPhoneInput({
 		this.onPhoneNumberChange,
 		this.initialPhoneNumber,
-		this.initialSelection,
+		this.initialDialCode,
 		this.errorText = ERROR_TEXT,
 		this.hintText = HINT_TEXT,
 		this.helperText = HELPER_TEXT,
@@ -60,6 +61,7 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.dialCodeOnChange,
 		this.useFormFields = false,
 		this.showFlags = true,
+		this.filteredDialCodes,
 	});
 
   static Future<String> internationalizeNumber(String number, String iso) {
@@ -90,13 +92,13 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
     _fetchCountryData().then((list) {
       Country preSelectedItem;
 
-      if (widget.initialSelection != null) {
-				String initialSelection = widget.initialSelection.toString().toUpperCase();
+      if (widget.initialDialCode != null) {
+				String initialDialCode = widget.initialDialCode.toString().toUpperCase();
         preSelectedItem = list.firstWhere(
             (e) => (
-							(e.code.toUpperCase() == initialSelection) ||
-							(e.code3.toUpperCase() == initialSelection) ||
-							(e.dialCode == initialSelection)
+							(e.code.toUpperCase() == initialDialCode) ||
+							(e.code3.toUpperCase() == initialDialCode) ||
+							(e.dialCode == initialDialCode)
 						),
             orElse: () => list[0]);
       } else {
@@ -141,19 +143,45 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
     }
   }
 
+	bool _canUseCountry(Map elem) {
+		List<String> filteredDialCodes = widget.filteredDialCodes ?? [];
+		if (filteredDialCodes.length < 1)
+			return true;
+
+		for (final String dialCode in filteredDialCodes) {
+			String _dialCode = dialCode.toString().toUpperCase();
+			if (
+				(elem['code'].toUpperCase() == _dialCode) ||
+				(elem['code3'].toUpperCase() == _dialCode) ||
+				(elem['dialCode'] == _dialCode)
+			) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
   Future<List<Country>> _fetchCountryData() async {
-    var list = await DefaultAssetBundle.of(context)
-        .loadString('packages/international_phone_input/assets/countries.json');
+    var list = await DefaultAssetBundle.of(context).loadString(
+			'packages/international_phone_input/assets/countries.json'
+		);
     var jsonList = json.decode(list);
     List<Country> elements = [];
     jsonList.forEach((s) {
       Map elem = Map.from(s);
-      elements.add(Country(
+			if (!_canUseCountry(elem))
+				return;
+
+      elements.add(
+				Country(
           name: elem['en_short_name'],
           code: elem['alpha_2_code'],
           code3: elem['alpha_3_code'],
           dialCode: elem['dial_code'],
-          flagUri: 'assets/flags/${elem['alpha_2_code'].toLowerCase()}.png'));
+          flagUri: 'assets/flags/${elem['alpha_2_code'].toLowerCase()}.png'
+				)
+			);
     });
     return elements;
   }
@@ -224,6 +252,19 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 	}
 
 	Widget _buildPhoneTextWidget() {
+
+		InputDecoration inputDecoration = InputDecoration(
+			errorText: hasError ? widget.errorText : null,
+			hintText: widget.hintText,
+			helperText: widget.helperText,
+			labelText: widget.labelText,
+			errorStyle: widget.errorStyle,
+			hintStyle: widget.hintStyle,
+			helperStyle: widget.helperStyle,
+			labelStyle: widget.labelStyle,
+			errorMaxLines: widget.errorMaxLines,
+		);
+
 		if (widget.useFormFields) {
 			return TextFormField(
 				keyboardType: TextInputType.phone,
@@ -231,17 +272,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				focusNode: widget.phoneTextFocusNode,
 				textInputAction: widget.phoneTextInputAction,
 				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
-				decoration: InputDecoration(
-					errorText: hasError ? widget.errorText : null,
-					hintText: widget.hintText,
-					helperText: widget.helperText,
-					labelText: widget.labelText,
-					errorStyle: widget.errorStyle,
-					hintStyle: widget.hintStyle,
-					helperStyle: widget.helperStyle,
-					labelStyle: widget.labelStyle,
-					errorMaxLines: widget.errorMaxLines,
-				),
+				decoration: inputDecoration,
 			);
 		}
 		else {
@@ -250,17 +281,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				controller: phoneTextController,
 				focusNode: widget.phoneTextFocusNode,
 				textInputAction: widget.phoneTextInputAction,
-				decoration: InputDecoration(
-					errorText: hasError ? widget.errorText : null,
-					hintText: widget.hintText,
-					helperText: widget.helperText,
-					labelText: widget.labelText,
-					errorStyle: widget.errorStyle,
-					hintStyle: widget.hintStyle,
-					helperStyle: widget.helperStyle,
-					labelStyle: widget.labelStyle,
-					errorMaxLines: widget.errorMaxLines,
-				),
+				decoration: inputDecoration,
 			);
 		}
 	}
