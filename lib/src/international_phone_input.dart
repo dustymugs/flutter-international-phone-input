@@ -19,16 +19,25 @@ class InternationalPhoneInput extends StatefulWidget {
   final TextStyle errorStyle;
   final TextStyle hintStyle;
   final int errorMaxLines;
+	final bool showFlags;
+	final bool useTextFormField;
+	final dialCodeFocusNode;
+	final phoneTextFocusNode;
 
-  InternationalPhoneInput(
-      {this.onPhoneNumberChange,
-      this.initialPhoneNumber,
-      this.initialSelection,
-      this.errorText,
-      this.hintText,
-      this.errorStyle,
-      this.hintStyle,
-      this.errorMaxLines});
+  InternationalPhoneInput({
+		this.onPhoneNumberChange,
+		this.initialPhoneNumber,
+		this.initialSelection,
+		this.errorText,
+		this.hintText,
+		this.errorStyle,
+		this.hintStyle,
+		this.errorMaxLines,
+		this.dialCodeFocusNode,
+		this.phoneTextFocusNode,
+		this.useTextFormField = false,
+		this.showFlags = true,
+	});
 
   static Future<String> internationalizeNumber(String number, String iso) {
     return PhoneService.getNormalizedPhoneNumber(number, iso);
@@ -72,11 +81,13 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
       Country preSelectedItem;
 
       if (widget.initialSelection != null) {
+				String initialSelection = widget.initialSelection.toString().toUpperCase();
         preSelectedItem = list.firstWhere(
-            (e) =>
-                (e.code.toUpperCase() ==
-                    widget.initialSelection.toUpperCase()) ||
-                (e.dialCode == widget.initialSelection.toString()),
+            (e) => (
+							(e.code.toUpperCase() == initialSelection) ||
+							(e.code3.toUpperCase() == initialSelection) ||
+							(e.dialCode == initialSelection)
+						),
             orElse: () => list[0]);
       } else {
         preSelectedItem = list[0];
@@ -124,6 +135,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
       elements.add(Country(
           name: elem['en_short_name'],
           code: elem['alpha_2_code'],
+          code3: elem['alpha_3_code'],
           dialCode: elem['dial_code'],
           flagUri: 'assets/flags/${elem['alpha_2_code'].toLowerCase()}.png'));
     });
@@ -141,6 +153,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
               padding: EdgeInsets.only(top: 8),
               child: DropdownButton<Country>(
                 value: selectedItem,
+								focusNode: widget.dialCodeFocusNode,
                 onChanged: (Country newValue) {
                   setState(() {
                     selectedItem = newValue;
@@ -155,11 +168,15 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
-                          Image.asset(
-                            value.flagUri,
-                            width: 32.0,
-                            package: 'international_phone_input',
-                          ),
+													(
+														widget.showFlags ?
+															Image.asset(
+																value.flagUri,
+																width: 32.0,
+																package: 'international_phone_input',
+															) :
+															Text(value.code3)
+													),
                           SizedBox(width: 4),
                           Text(value.dialCode)
                         ],
@@ -171,19 +188,29 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
             ),
           ),
           Flexible(
-              child: TextField(
-            keyboardType: TextInputType.phone,
-            controller: phoneTextController,
-            decoration: InputDecoration(
-              hintText: hintText,
-              errorText: hasError ? errorText : null,
-              hintStyle: hintStyle ?? null,
-              errorStyle: errorStyle ?? null,
-              errorMaxLines: errorMaxLines ?? 3,
-            ),
-          ))
+            child: getTextField()(
+							keyboardType: TextInputType.phone,
+							controller: phoneTextController,
+							focusNode: widget.phoneTextFocusNode,
+							decoration: InputDecoration(
+								hintText: hintText,
+								errorText: hasError ? errorText : null,
+								hintStyle: hintStyle ?? null,
+								errorStyle: errorStyle ?? null,
+								errorMaxLines: errorMaxLines ?? 3,
+							),
+						),
+					),
         ],
       ),
     );
   }
+
+	dynamic getTextField() {
+		if (widget.useTextFormField)
+			return TextFormField;
+		else
+			return TextField;
+	}
+
 }
