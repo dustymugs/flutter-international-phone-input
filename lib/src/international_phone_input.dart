@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 class InternationalPhoneInput extends StatefulWidget {
 
 	static const String ERROR_TEXT = 'Please enter a valid phone number';
+	static const String REQUIRED_TEXT = 'A valid phone number is required';
 	static const String HINT_TEXT = 'eg. 244056345';
 	static const String HELPER_TEXT = 'A valid phone number includes area/city code';
 	static const String LABEL_TEXT = 'Phone number';
@@ -24,6 +25,7 @@ class InternationalPhoneInput extends StatefulWidget {
   final String initialPhoneNumber;
   final String initialDialCode;
   final String errorText;
+	final String requiredText;
   final String hintText;
 	final String helperText;
 	final String labelText;
@@ -48,6 +50,7 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.initialPhoneNumber,
 		this.initialDialCode,
 		this.errorText = ERROR_TEXT,
+		this.requiredText = REQUIRED_TEXT,
 		this.hintText = HINT_TEXT,
 		this.helperText = HELPER_TEXT,
 		this.labelText = LABEL_TEXT,
@@ -81,7 +84,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   Country selectedCountry;
   List<Country> itemList;
 
-  bool hasError = false;
+  String errorMessage = null;
 
   TextEditingController phoneTextController;
 
@@ -123,16 +126,26 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		super.dispose();
 	}
 
-  bool _validatePhoneNumber() {
+  String _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
-    if (widget.isRequired || (phoneText != null && phoneText.isNotEmpty)) {
+
+		if (widget.isRequired && (phoneText == null || phoneText.isEmpty)) {
+			if (mounted) {
+				setState(() {
+					errorMessage = widget.requiredText;
+				});
+			}
+		}
+		else if (phoneText != null && phoneText.isNotEmpty) {
       PhoneService.parsePhoneNumber(
 				phoneText,
 			 	selectedCountry.code
 			).then((isValid) {
-				setState(() {
-					hasError = !isValid;
-				});
+				if (mounted) {
+					setState(() {
+						errorMessage = isValid ? null : widget.errorText;
+					});
+				}
 
         if (widget.onPhoneNumberChange != null) {
           if (isValid) {
@@ -146,8 +159,15 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
         }
       });
     }
+		else {
+			if (mounted) {
+				setState(() {
+					errorMessage = null;
+				});
+			}
+		}
 
-		return hasError;
+		return errorMessage;
   }
 
 	bool _canUseCountry(Map elem) {
@@ -264,7 +284,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 	Widget _buildPhoneTextWidget() {
 
 		InputDecoration inputDecoration = InputDecoration(
-			errorText: widget.useFormFields ? null : (hasError ? widget.errorText : null),
+			errorText: widget.useFormFields ? null : errorMessage,
 			hintText: widget.hintText,
 			helperText: widget.helperText,
 			labelText: widget.labelText,
@@ -284,7 +304,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				textInputAction: widget.phoneTextInputAction,
 				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
 				decoration: inputDecoration,
-				validator: (String value) => _validatePhoneNumber() ? null : widget.errorText,
+				validator: (String value) => _validatePhoneNumber(),
 			);
 		}
 		else {
@@ -298,5 +318,4 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			);
 		}
 	}
-
 }
