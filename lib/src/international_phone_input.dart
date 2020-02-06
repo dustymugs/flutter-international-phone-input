@@ -90,7 +90,6 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		itemList = <Country>[];
 
 		phoneTextController = TextEditingController();
-    phoneTextController.addListener(_validatePhoneNumber);
     phoneTextController.text = widget.initialPhoneNumber;
 
     _fetchCountryData().then((list) {
@@ -295,6 +294,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				focusNode: widget.phoneTextFocusNode,
 				textInputAction: widget.phoneTextInputAction,
 				decoration: inputDecoration,
+				onChanged: (String value) => _validatePhoneNumber(),
 			);
 		}
 	}
