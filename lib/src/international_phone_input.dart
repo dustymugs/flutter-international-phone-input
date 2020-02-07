@@ -128,6 +128,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 	@override
 	void dispose() {
 		phoneTextController.dispose();
+		debugPrint('dispose');
 		super.dispose();
 	}
 
@@ -140,9 +141,11 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		}
 
 		if (widget.isRequired && (phoneText == null || phoneText.isEmpty)) {
-			setState(() {
-				errorMessage = widget.requiredText;
-			});
+			if (mounted) {
+				setState(() {
+					errorMessage = widget.requiredText;
+				});
+			}
 		}
 		else if (phoneText != null && phoneText.isNotEmpty) {
 			_inAsyncValidation = true;
@@ -166,17 +169,21 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 					}
 				}
 
-				setState(() {
-					_inAsyncValidation = false;
-					errorMessage = isValid ? null : widget.errorText;
-				});
+				if (mounted) {
+					setState(() {
+						_inAsyncValidation = false;
+						errorMessage = isValid ? null : widget.errorText;
+					});
+				}
 
       });
     }
 		else {
-			setState(() {
-				errorMessage = null;
-			});
+			if (mounted) {
+				setState(() {
+					errorMessage = null;
+				});
+			}
 		}
 
 		return errorMessage;
