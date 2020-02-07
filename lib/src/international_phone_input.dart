@@ -133,7 +133,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   String _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
 
-		if (_inAsyncValidation == false) {
+		if (widget.useFormFields && _inAsyncValidation == false) {
 			_inAsyncValidation = null;
 			return errorMessage;
 		}
