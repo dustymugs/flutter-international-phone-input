@@ -157,7 +157,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 					if (isValid) {
 						PhoneService.getNormalizedPhoneNumber(
 							phoneText,
-						 	selectedCountry.code3
+						 	selectedCountry.code
 						).then(
 							(number) {
 							 	widget.onPhoneNumberChange(selectedCountry.code3, phoneText, number);
