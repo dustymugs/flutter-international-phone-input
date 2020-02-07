@@ -18,12 +18,12 @@ class InternationalPhoneInput extends StatefulWidget {
 	static const String LABEL_TEXT = 'Phone number';
 
   final void Function(
+	 	String countryCode,
 		String phoneNumber,
 	 	String internationalizedPhoneNumber,
-	 	String isoCode
 	) onPhoneNumberChange;
   final String initialPhoneNumber;
-  final String initialDialCode;
+  final String initialCountryCode;
   final String errorText;
 	final String requiredText;
   final String hintText;
@@ -48,7 +48,7 @@ class InternationalPhoneInput extends StatefulWidget {
   InternationalPhoneInput({
 		this.onPhoneNumberChange,
 		this.initialPhoneNumber,
-		this.initialDialCode,
+		this.initialCountryCode,
 		this.errorText = ERROR_TEXT,
 		this.requiredText = REQUIRED_TEXT,
 		this.hintText = HINT_TEXT,
@@ -102,16 +102,17 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
     _fetchCountryData().then((list) {
       Country preSelectedItem;
 
-      if (widget.initialDialCode != null) {
-				String initialDialCode = widget.initialDialCode.toString().toUpperCase();
+      if (widget.initialCountryCode != null) {
+				String initialCountryCode = widget.initialCountryCode.toString().toUpperCase();
         preSelectedItem = list.firstWhere(
             (e) => (
-							(e.code.toUpperCase() == initialDialCode) ||
-							(e.code3.toUpperCase() == initialDialCode) ||
-							(e.dialCode == initialDialCode)
+							(e.code.toUpperCase() == initialCountryCode) ||
+							(e.code3.toUpperCase() == initialCountryCode) ||
+							(e.dialCode == initialCountryCode)
 						),
             orElse: () => list[0]);
-      } else {
+      }
+		 	else {
         preSelectedItem = list[0];
       }
 
@@ -151,13 +152,17 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 			).then((isValid) {
 				if (widget.onPhoneNumberChange != null) {
 					if (isValid) {
-						PhoneService.getNormalizedPhoneNumber(phoneText, selectedCountry.code)
-								.then((number) {
-							widget.onPhoneNumberChange(phoneText, number, selectedCountry.code);
-						});
+						PhoneService.getNormalizedPhoneNumber(
+							phoneText,
+						 	selectedCountry.code3
+						).then(
+							(number) {
+							 	widget.onPhoneNumberChange(selectedCountry.code3, phoneText, number);
+						 	}
+						);
 					}
 				 	else {
-						widget.onPhoneNumberChange('', '', selectedCountry.code);
+						widget.onPhoneNumberChange(selectedCountry.code3, '', '');
 					}
 				}
 
