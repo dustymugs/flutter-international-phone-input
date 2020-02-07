@@ -305,7 +305,8 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
 		if (widget.useFormFields) {
 			// run validators on reload to process async results
-			_phoneTextKey.currentState?.validate();
+			if (_inAsyncValidation == false)
+			 	_phoneTextKey.currentState?.validate();
 
 			return TextFormField(
 				key: _phoneTextKey,
