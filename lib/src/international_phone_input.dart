@@ -326,9 +326,10 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				controller: phoneTextController,
 				focusNode: widget.phoneTextFocusNode,
 				textInputAction: widget.phoneTextInputAction,
-				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
 				decoration: inputDecoration,
+				onChanged: (String value) => _validatePhoneNumber(),
 				validator: (String value) => _validatePhoneNumber(),
+				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
 			);
 		}
 		else {
