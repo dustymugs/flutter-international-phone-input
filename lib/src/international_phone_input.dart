@@ -90,7 +90,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   String errorMessage = null;
 
   TextEditingController phoneTextController;
-	bool _returnedFromAsyncValidate = false;
+	bool _inAsyncValidation;
 
   @override
   void initState() {
@@ -133,15 +133,18 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   String _validatePhoneNumber() {
     String phoneText = phoneTextController.text;
 
+		if (_inAsyncValidation == false) {
+			_inAsyncValidation = null;
+			return errorMessage;
+		}
+
 		if (widget.isRequired && (phoneText == null || phoneText.isEmpty)) {
 			setState(() {
 				errorMessage = widget.requiredText;
 			});
 		}
 		else if (phoneText != null && phoneText.isNotEmpty) {
-			if (_returnedFromAsyncValidate)
-				return errorMessage;
-			_returnedFromAsyncValidate = false;
+			_inAsyncValidation = true;
       PhoneService.parsePhoneNumber(
 				phoneText,
 			 	selectedCountry.code
@@ -159,7 +162,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				}
 
 				setState(() {
-					_returnedFromAsyncValidate = true;
+					_inAsyncValidation = false;
 					errorMessage = isValid ? null : widget.errorText;
 				});
 
