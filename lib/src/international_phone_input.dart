@@ -22,6 +22,7 @@ class InternationalPhoneInput extends StatefulWidget {
 		String phoneNumber,
 	 	String internationalizedPhoneNumber,
 	) onPhoneNumberChange;
+
   final String initialPhoneNumber;
   final String initialCountryCode;
   final String errorText;
@@ -38,6 +39,7 @@ class InternationalPhoneInput extends StatefulWidget {
 	final bool isRequired;
 	final bool showFlags;
 	final bool useFormFields;
+	final GlobalKey<FormFieldState> phoneTextKey;
 	final FocusNode dialCodeFocusNode;
 	final List<String> filteredDialCodes;
 	final FocusNode phoneTextFocusNode;
@@ -66,6 +68,7 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.phoneTextOnFieldSubmitted,
 		this.dialCodeOnChange,
 		this.useFormFields = false,
+		this.phoneTextKey,
 		this.isRequired = false,
 		this.showFlags = true,
 		this.filteredDialCodes,
@@ -82,7 +85,7 @@ class InternationalPhoneInput extends StatefulWidget {
 
 class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 
-	var _phoneTextKey = GlobalKey<FormFieldState>();
+	GlobalKey<FormFieldState> phoneTextKey;
 
   Country selectedCountry;
   List<Country> itemList;
@@ -95,6 +98,9 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
   @override
   void initState() {
 		itemList = <Country>[];
+
+		if (widget.useFormFields)
+			phoneTextKey = widget.phoneTextKey ?? GlobalKey<FormFieldState>();
 
 		phoneTextController = TextEditingController();
     phoneTextController.text = widget.initialPhoneNumber;
@@ -318,10 +324,10 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		if (widget.useFormFields) {
 			// run validators on reload to process async results
 			if (_inAsyncValidation == false)
-			 	_phoneTextKey.currentState?.validate();
+			 	phoneTextKey.currentState?.validate();
 
 			return TextFormField(
-				key: _phoneTextKey,
+				key: phoneTextKey,
 				keyboardType: TextInputType.phone,
 				controller: phoneTextController,
 				focusNode: widget.phoneTextFocusNode,
