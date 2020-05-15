@@ -38,6 +38,7 @@ class InternationalPhoneInput extends StatefulWidget {
   final int helperMaxLines;
 	final bool isRequired;
 	final bool showFlags;
+	final bool enabled;
 	final bool useFormFields;
 	final GlobalKey<FormFieldState> phoneTextKey;
 	final FocusNode dialCodeFocusNode;
@@ -71,6 +72,7 @@ class InternationalPhoneInput extends StatefulWidget {
 		this.phoneTextKey,
 		this.isRequired = false,
 		this.showFlags = true,
+		this.enabled = true,
 		this.filteredDialCodes,
 	});
 
@@ -292,14 +294,18 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 		DropdownButton dropdown = DropdownButton<Country>(
 			value: selectedCountry,
 			focusNode: widget.dialCodeFocusNode,
-			onChanged: (Country newValue) {
-				setState(() {
-					selectedCountry = newValue;
-				});
-				_validatePhoneNumber();
-				if (widget.dialCodeOnChange != null)
-					widget.dialCodeOnChange(newValue);
-			},
+			onChanged: (
+				widget.enabled ?
+					(Country newValue) {
+						setState(() {
+							selectedCountry = newValue;
+						});
+						_validatePhoneNumber();
+						if (widget.dialCodeOnChange != null)
+							widget.dialCodeOnChange(newValue);
+					} :
+					null
+			),
 			items: items,
 		);
 
@@ -336,6 +342,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				onChanged: (String value) => _validatePhoneNumber(),
 				validator: (String value) => _validatePhoneNumber(),
 				onFieldSubmitted: widget.phoneTextOnFieldSubmitted,
+				enabled: widget.enabled,
 			);
 		}
 		else {
@@ -346,6 +353,7 @@ class _InternationalPhoneInputState extends State<InternationalPhoneInput> {
 				textInputAction: widget.phoneTextInputAction,
 				decoration: inputDecoration,
 				onChanged: (String value) => _validatePhoneNumber(),
+				enabled: widget.enabled,
 			);
 		}
 	}
